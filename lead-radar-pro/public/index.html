@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lead Radar Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo"><i data-lucide="radar"></i></div>
+        <div>
+          <h1>Lead Radar Pro</h1>
+          <p>Gelişmiş lead keşif motoru</p>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <!-- Dropdown Group 1: Keşif & Analiz -->
+        <div class="nav-group open" id="groupDiscovery">
+          <button class="nav-group-trigger"><span class="trigger-label"><i data-lucide="compass"></i> Keşif & Analiz</span> <i data-lucide="chevron-down" class="chevron"></i></button>
+          <div class="nav-group-content">
+            <a href="#/overview" data-route="overview"><i data-lucide="layout-dashboard"></i> Genel Bakış</a>
+            <a href="#/discovery" data-route="discovery"><i data-lucide="map-pin"></i> Tarama Merkezi</a>
+            <a href="#/agents" data-route="agents"><i data-lucide="workflow"></i> Pipeline</a>
+            <a href="#/history" data-route="history"><i data-lucide="history"></i> Geçmiş</a>
+          </div>
+        </div>
+        
+        <!-- Dropdown Group 2: Veri Yönetimi -->
+        <div class="nav-group open" id="groupData">
+          <button class="nav-group-trigger"><span class="trigger-label"><i data-lucide="database"></i> Veri Yönetimi</span> <i data-lucide="chevron-down" class="chevron"></i></button>
+          <div class="nav-group-content">
+            <a href="#/leads" data-route="leads"><i data-lucide="users"></i> Leadler</a>
+            <a href="#/fields" data-route="fields"><i data-lucide="sliders-horizontal"></i> Veri Alanları</a>
+          </div>
+        </div>
+
+        <!-- Dropdown Group 3: Sistem -->
+        <div class="nav-group open" id="groupSystem">
+          <button class="nav-group-trigger"><span class="trigger-label"><i data-lucide="cpu"></i> Sistem</span> <i data-lucide="chevron-down" class="chevron"></i></button>
+          <div class="nav-group-content">
+            <a href="#/logs" data-route="logs"><i data-lucide="terminal"></i> Loglar</a>
+            <a href="#/settings" data-route="settings"><i data-lucide="settings"></i> Ayarlar</a>
+          </div>
+        </div>
+      </nav>
+      <div class="side-health">
+        <div class="label">Sistem Durumu</div>
+        <h3 id="sideHealth">Hazır</h3>
+        <p id="sideHealthText">Bağlantılar kontrol ediliyor...</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-wrap">
+          <i data-lucide="search"></i>
+          <input id="globalSearch" placeholder="Lead, mahalle veya kategori ara..." />
+        </div>
+        <div id="livePill" class="status-pill"><span class="dot"></span> Online</div>
+      </div>
+
+      <section class="page" data-page="overview">
+        <div class="hero">
+          <div class="hero-grid">
+            <div>
+              <div class="eyebrow">Lead Intelligence Platform</div>
+              <h2>İşaretlediğin bölgeden, seçtiğin verilerle lead topla.</h2>
+              <p>Harita üzerinde daire veya poligon çiz, hangi alanların çekileceğini panelden belirle, AI zenginleştirme ve Sheets senkronu ile tek akışta yönet.</p>
+              <div class="actions">
+                <button class="btn primary" id="btnQuickRun"><i data-lucide="zap"></i> Taramayı Başlat</button>
+                <button class="btn secondary" data-goto="discovery"><i data-lucide="map"></i> Harita Ayarları</button>
+                <button class="btn secondary" data-goto="fields"><i data-lucide="sliders-horizontal"></i> Alan Seçimi</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="panel-title"><h3>Canlı Durum</h3><span id="runMode">Manuel</span></div>
+              <div class="cmd-rows" id="overviewCmd"></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid-4" style="margin-top:16px">
+          <div class="card metric"><label>Main Aktif</label><strong id="mMain">0</strong><small>Ulaşılacak lead</small></div>
+          <div class="card metric"><label>Research DB</label><strong id="mResearch">0</strong><small>Kalıcı arşiv</small></div>
+          <div class="card metric"><label>Seçili Alan</label><strong id="mFields">0</strong><small>Çekilecek veri</small></div>
+          <div class="card metric"><label>Bağlantı</label><strong id="mConn">0/2</strong><small>Scraper · Model</small></div>
+        </div>
+        <div class="grid-2" style="margin-top:16px">
+          <div class="card">
+            <div class="panel-title"><h3>Operasyon KPI</h3><span>canlı</span></div>
+            <div class="kpi-row">
+              <div><b id="kpiHot">0</b><span>Yüksek skor</span></div>
+              <div><b id="kpiPhone">0</b><span>Telefon var</span></div>
+              <div><b id="kpiWeb">0</b><span>Web sitesi</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="panel-title"><h3>Hızlı İşlemler</h3></div>
+            <div class="actions">
+              <button class="btn secondary" id="btnExport"><i data-lucide="download"></i> JSON İndir</button>
+              <button class="btn secondary" data-goto="logs"><i data-lucide="file-text"></i> Loglar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-page="discovery">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Geo Discovery</div>
+            <h2>Tarama Merkezi</h2>
+            <p>Haritada bölge işaretle veya ilçe/mahalle gir. Kategori ve limit ayarlarını buradan yönet.</p>
+          </div>
+          <button class="btn primary" id="btnRunDiscovery"><i data-lucide="play"></i> Taramayı Başlat</button>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="panel-title"><h3>Lokasyon</h3><span>input</span></div>
+            <div class="field"><label>İlçe</label><input id="district" value="Kadıköy" /></div>
+            <div class="field"><label>Mahalleler</label><input id="neighborhoods" value="Moda,Caferağa" /></div>
+            <div class="field"><label>Kategoriler</label><input id="terms" value="cafe,restaurant,tatlıcı" /></div>
+            <div class="chips" id="locationPresets"></div>
+          </div>
+          <div class="card">
+            <div class="panel-title"><h3>Filtreler</h3><span>scoring</span></div>
+            <div class="field"><label>Limit / kategori</label><input id="limit" type="number" min="1" max="80" value="20" /></div>
+            <div class="field"><label>Max final lead</label><input id="maxFinalLeads" type="number" min="1" max="200" value="30" /></div>
+            <div class="field"><label>Max main aktif</label><input id="maxMain" type="number" min="0" max="500" value="100" /></div>
+            <div class="field"><label>Min yenilik skoru</label><input id="minFreshness" type="number" min="0" max="10" step="0.1" value="0" /></div>
+            <div class="field"><label>Max yorum (0=sınırsız)</label><input id="maxReviews" type="number" min="0" value="0" /></div>
+            <div class="field"><label>Sıralama</label>
+              <select id="sortBy">
+                <option value="freshness-desc">Yenilik skoru</option>
+                <option value="reviews-asc">Yorum düşük</option>
+                <option value="rating-desc">Puan yüksek</option>
+                <option value="name-asc">İsim A-Z</option>
+              </select>
+            </div>
+            <div class="field"><label>Main modu</label>
+              <select id="mainMode">
+                <option value="new-only">Sadece yeni</option>
+                <option value="include-existing">Mevcutları dahil et</option>
+                <option value="replace-active">Listeyi değiştir</option>
+              </select>
+            </div>
+            <div class="toggle-row">
+              <div class="info"><b>Telefon zorunlu</b><small>Sadece telefonu olanlar</small></div>
+              <label class="switch"><input type="checkbox" id="requirePhone" /><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="info"><b>AI zenginleştirme</b><small>Lead kalite ve not üretimi</small></div>
+              <label class="switch"><input type="checkbox" id="enableAi" checked /><span class="slider"></span></label>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="panel-title"><h3>Harita Bölge Seçimi</h3><span id="geoStatus">Kapalı</span></div>
+          <div class="map-toolbar" id="mapToolbar"></div>
+          <div class="field" style="max-width:320px"><label>Daire radius (m)</label><input id="geoRadius" type="number" min="100" max="15000" step="100" value="1500" /></div>
+          <div class="map-shell"><div id="geoMap"></div></div>
+        </div>
+      </section>
+
+      <section class="page" data-page="fields">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Field Control</div>
+            <h2>Veri Alanları</h2>
+            <p>Maps scraper'dan hangi verilerin çekilip kaydedileceğini seç. Preset'lerle hızlı yapılandır.</p>
+          </div>
+          <div class="actions">
+            <span class="geo-pill" id="fieldCountLabel">0 alan seçili</span>
+            <button class="btn primary" id="btnSaveFields"><i data-lucide="save"></i> Kaydet</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:16px">
+          <div class="panel-title"><h3>Preset Profiller</h3></div>
+          <div class="chips" id="fieldPresets"></div>
+          <div class="field-count-bar"><i id="fieldCountBar" style="width:0%"></i></div>
+        </div>
+        <div class="card" id="fieldToggles"></div>
+      </section>
+
+      <section class="page" data-page="agents">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Pipeline Monitor</div>
+            <h2>Canlı Pipeline</h2>
+            <p>Her aşamanın durumu, ilerlemesi ve son mesajı.</p>
+          </div>
+          <button class="btn secondary" id="btnRefreshAgents"><i data-lucide="refresh-cw"></i> Yenile</button>
+        </div>
+        <div class="card">
+          <div class="pipeline" id="pipelineBox"></div>
+          <div class="agent-board">
+            <div class="agent-network" id="agentNetwork">
+              <svg id="agentLinks" class="agent-links" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+              <div class="agent-nodes" id="agentNodes"></div>
+            </div>
+            <div>
+              <div class="panel-title"><h3>Agent Listesi</h3><span id="agentSummary">-</span></div>
+              <div class="agent-list" id="agentRows"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-page="leads">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Lead Table</div>
+            <h2>Aktif Leadler</h2>
+            <p>Seçili alanlara göre dinamik tablo görünümü.</p>
+          </div>
+          <button class="btn secondary" id="btnRefreshLeads"><i data-lucide="refresh-cw"></i> Yenile</button>
+        </div>
+        <div class="card">
+          <div class="panel-title"><h3>Main Liste</h3><span id="leadHint">0 lead</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead id="leadHead"></thead>
+              <tbody id="leadRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" data-page="history">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Run History</div>
+            <h2>Tarama Geçmişi</h2>
+            <p>Son çalıştırmaların özeti ve sonuçları.</p>
+          </div>
+        </div>
+        <div class="card" id="historyList"></div>
+      </section>
+
+      <section class="page" data-page="logs">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">System Logs</div>
+            <h2>Sunucu Logları</h2>
+          </div>
+          <button class="btn secondary" id="btnRefreshLogs"><i data-lucide="refresh-cw"></i> Yenile</button>
+        </div>
+        <div class="grid-2">
+          <div class="card"><div class="panel-title"><h3>Canlı Log</h3></div><div id="logBox" class="log"></div></div>
+          <div class="card"><div class="panel-title"><h3>Server</h3><span id="serverLogMeta">-</span></div><div id="serverLogs" class="log"></div></div>
+        </div>
+      </section>
+
+      <section class="page" data-page="settings">
+        <div class="page-head">
+          <div>
+            <div class="eyebrow">Admin</div>
+            <h2>Ayarlar</h2>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="panel-title"><h3>AI & OpenRouter Ayarları</h3></div>
+            <div class="field">
+              <label>API Base URL</label>
+              <input id="settingBaseUrl" placeholder="https://openrouter.ai/api/v1" />
+            </div>
+            <div class="field">
+              <label>API Key</label>
+              <input id="settingApiKey" type="password" placeholder="sk-or-..." />
+            </div>
+            <div class="field">
+              <label>Sınıflandırıcı Model (Classifier)</label>
+              <input id="settingClassifier" placeholder="google/gemini-2.5-flash:free" />
+            </div>
+            <div class="field">
+              <label>Zenginleştirici Model (Enricher)</label>
+              <input id="settingEnricher" placeholder="google/gemini-2.5-flash:free" />
+            </div>
+            <button class="btn primary" id="btnSaveSettings" style="margin-top:12px; width:100%"><i data-lucide="save"></i> Ayarları Kaydet</button>
+          </div>
+          
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="card"><div class="panel-title"><h3>Bağlantılar</h3></div><div id="settingsInfo" class="log"></div></div>
+            <div class="card">
+              <div class="panel-title"><h3>Tehlikeli Alan</h3></div>
+              <p style="color:var(--muted);font-size:13px;line-height:1.6">Lokal DB, runtime ve Sheets içeriğini sıfırlar.</p>
+              <div class="field"><label>Onay: RESET</label><input id="resetConfirm" placeholder="RESET yaz" /></div>
+              <button class="btn danger" id="btnReset"><i data-lucide="trash-2"></i> Her Şeyi Sıfırla</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="runModal" class="modal-backdrop">
+    <div class="modal">
+      <div class="eyebrow">Tarama Kaynağı</div>
+      <h3>Bu run nasıl çalışsın?</h3>
+      <p>Harita bölgesi mi yoksa input alanları mı kullanılsın?</p>
+      <div class="modal-options">
+        <button class="modal-card" data-run-source="map">
+          <b><i data-lucide="map-pin"></i> Harita Bölgesi</b>
+          <span>Daire veya poligon ile işaretlenen alandan tara.</span>
+          <em id="runMapSummary">-</em>
+        </button>
+        <button class="modal-card" data-run-source="inputs">
+          <b><i data-lucide="keyboard"></i> Input Alanları</b>
+          <span>İlçe, mahalle ve kategori inputlarına göre tara.</span>
+          <em id="runInputSummary">-</em>
+        </button>
+      </div>
+      <div class="actions" style="justify-content:flex-end">
+        <button class="btn secondary" id="btnModalCancel">Vazgeç</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/assets/app.js"></script>
+</body>
+</html>

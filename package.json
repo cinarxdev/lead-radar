@@ -1,0 +1,12 @@
+{
+  "name": "3d-qr-menu-lead-automation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node lead-radar-pro/src/server.mjs",
+    "run:manual": "node lead-radar-pro/src/cli-run.mjs",
+    "doctor": "node lead-radar-pro/src/doctor.mjs"
+  },
+  "engines": { "node": ">=20" }
+}

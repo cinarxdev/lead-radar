@@ -1,0 +1,16 @@
+# API Keys & Secrets
+.env
+lead-radar-pro/.env
+
+# Local Databases & Logs
+lead-radar-pro/data/*.json
+lead-radar-pro/data/*.log
+lead-radar-pro/data/scraper/
+
+# Large Binaries & Compiled Executables
+tools/google-maps-scraper.exe
+tools/google-maps-scraper
+
+# Node Dependencies
+node_modules/
+lead-radar-pro/node_modules/

@@ -1,0 +1,12 @@
+{
+  "name": "lead-radar-pro",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.mjs",
+    "doctor": "node src/doctor.mjs",
+    "run:manual": "node src/cli-run.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
